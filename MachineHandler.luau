@@ -1,6 +1,6 @@
 -- (Description of the Script and function) Machine room, machinehandler script that scans items, and highlights the surrounding items. 
-If scanned a special pickup, then it will error and if u scanned 5 pickups it will have a 10 seconds timer 
-until it fully shutdowns on where uppermanagement gives you 1000 performance points for being a proactive tester of the CBT3000
+--If scanned a special pickup, then it will error and if u scanned 5 pickups it will have a 10 seconds timer 
+--until it fully shutdowns on where uppermanagement gives you 1000 performance points for being a proactive tester of the CBT3000
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage") 
 local RunService = game:GetService("RunService") 
