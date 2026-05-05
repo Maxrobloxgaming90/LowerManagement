@@ -103,6 +103,7 @@ local function getAllOrbs()
 	return list
 end
 
+-- stores old properties to be able to reuse again
 local function init()
 	LightModule.ToggleAllLightsUnderParent(neonParts, false)
 	
@@ -137,14 +138,14 @@ local function startOverloadCycle()
 
 		while overloadRunning and not broken do
 			for _, orb in ipairs(allOrbs) do
-				orb.Color = Color3.fromRGB(255, 0, 0)
+				orb.Color = Color3.fromRGB(255, 0, 0) -- spams red(then black) color while in the overload phase
 			end
 
 			for _, part in ipairs(neonParts:GetChildren()) do
 				if part:IsA("BasePart") then
 					local newColor = Color3.fromHSV(math.random(), 1, 1)
 
-					part.Color = newColor
+					part.Color = newColor -- changes to a random color until it fully shutdowns so as the surface light
 
 					local light = part:FindFirstChildOfClass("SurfaceLight")
 					if light then
@@ -171,7 +172,7 @@ local function stopOverloadCycle()
 	overloadRunning = false
 end
 
-local function getPickupImage(pickup)
+local function getPickupImage(pickup) -- gets the pickup image for the terminal on where it shows the scanned item's image
 	local tool = ItemUtils.getToolFromPickup(pickup); if not tool then return end
 	local val_ImageId = tool:FindFirstChild('Values') and tool.Values:FindFirstChild('ImageId')
 	if not val_ImageId or not val_ImageId.Value then return end
@@ -179,7 +180,7 @@ local function getPickupImage(pickup)
 	return StringUtils.GetUsableAssetId(val_ImageId.Value)
 end
 
-local function startSoundFX()
+local function startSoundFX() -- plays conveyor sounds
 	ConveyorSound:Stop()
 	ConveyorSound.TimePosition = 0
 
@@ -187,36 +188,36 @@ local function startSoundFX()
 	ConveyorSound:Play()
 end
 
-local function stopSoundFX()
+local function stopSoundFX() -- fades out the conveyor sound
 	SoundUtils.Fade(ConveyorSound, 'Out', 0.5, false, true)
 	ConveyorEnd:Play()
 end
 
-local function toggleChute(open: boolean, duration)
+local function toggleChute(open: boolean, duration) -- opens the coverPart on where the disposalchute will open for pickups/items to fall in
 	if not coverPart then return end
 	if gateOpen == open then return end
 
 	gateOpen = open
 	coverPart.CanCollide = not open
 
-	local tweenInfo = TweenInfo.new(duration or 3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	local tweenInfo = TweenInfo.new(duration or 3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out) -- tweening the coverpart for it to open
 
 	TweenService:Create(coverPart, tweenInfo, {
 		CFrame = open and openCF or closedCF
 	}):Play()
 end
 	
-function updateConveyor()
+function updateConveyor() -- updates the conveyor based on states
 	if active and conveyorOn then
 		toggleRidge:Fire(true)
-		conveyor.AssemblyLinearVelocity = conveyor.CFrame.LookVector * speed
+		conveyor.AssemblyLinearVelocity = conveyor.CFrame.LookVector * speed -- apply assemblylinearvelocity if the machine is active and the conveyor is on
 
 		startSoundFX()
 
 	elseif active then
-		toggleRidge:Fire(false)
+		toggleRidge:Fire(false) --if conveyor not On, but the machine is active then it stops the ridge bezier and stops sounds
 		stopSoundFX()
-	else
+	else -- else if those two is false, then stops ridge and sounds.
 		toggleRidge:Fire(false)
 		stopSoundFX()
 
@@ -242,7 +243,7 @@ local orb_Color_map = {
 	CenterOrb = Color3.fromRGB(248, 248, 248)
 }
 
-machineVisuals.Event:Connect(function()
+machineVisuals.Event:Connect(function() -- if the machine is On(active) then the orbs on the top of the machine lights up
 	for _, orb in ipairs(getAllOrbs()) do
 		local color = orb_Color_map[orb.Name]
 
@@ -266,7 +267,7 @@ activateEvent.OnServerEvent:Connect(function()
 		active = true
 		conveyorOn = true
 		updateConveyor()
-		activateMachine()
+		activateMachine() -- everything turns on
 	end
 end)
 
@@ -281,10 +282,10 @@ end)
 local function highlightSimilar(targetPickup)
 	local count = 0
 
-	for _, obj in ipairs(CollectionService:GetTagged("Pickup")) do --not sure yet w/ this
+	for _, obj in ipairs(CollectionService:GetTagged("Pickup")) do
 		if not obj:IsDescendantOf(workspace) or obj.Name ~= targetPickup.Name or obj == targetPickup then continue end
 		count += 1
-		local highlight = Instance.new("Highlight")
+		local highlight = Instance.new("Highlight") -- makes a highlight and parents it to all objects that has the similar name
 		highlight.FillColor = Color3.fromRGB(255, 0, 0)
 		highlight.FillTransparency = 1
 		highlight.OutlineTransparency = 1
@@ -294,7 +295,7 @@ local function highlightSimilar(targetPickup)
 		fadeIn:Play()
 		fadeIn.Completed:Once(function()
 			local fadeOut = TweenService:Create(highlight, TweenInfo.new(highlightDuration - 2), {FillTransparency = 1})
-			fadeOut:Play()
+			fadeOut:Play() -- and fades out after a few seconds
 		end)
 
 		Debris:AddItem(highlight, highlightDuration)
@@ -314,7 +315,7 @@ function shutdownMachine()
 
 	active = false
 	conveyorOn = false
-	toggleChute(false, 0.3)
+	toggleChute(false, 0.3) -- everything shutdowns(conveyor, machine, chute, terminal) all of them basically turns off or disables
 	
 	conveyor.AssemblyLinearVelocity = Vector3.zero
 	toggleRidge:Fire(false)
@@ -356,8 +357,6 @@ function shutdownMachine()
 	end
 
 	LightModule.ToggleAllLightsUnderParent(neonParts, false)
-
-
 
 	scanner.CanQuery = false
 
@@ -581,7 +580,7 @@ function activateMachine()
 				
 				lastItemTime = tick()
 				scanned[pickup] = true 
-				ItemUtils.TogglePickupInteractability(pickup, false)
+				ItemUtils.TogglePickupInteractability(pickup, false) -- after the pickup has been scanned, you are not able to pick it up again and it continues until it falls down the disposalchute
 				pickup:SetAttribute("Locked", true)
 				
 				local now = tick() 
@@ -609,9 +608,9 @@ function activateMachine()
 						end 
 					end 
 
-					local imageId = getPickupImage(pickup) 
+					local imageId = getPickupImage(pickup) -- gets the pickup image id
 
-					scanEvent:FireAllClients("ERROR", nil, imageId) 
+					scanEvent:FireAllClients("ERROR", nil, imageId) -- fires the event to all clients so it errors to everyone
 
 					continue 
 				end 
@@ -627,7 +626,7 @@ function activateMachine()
 		end 
 
 		for pickup in pairs(inConveyor) do 
-			if not currentPickups[pickup] then
+			if not currentPickups[pickup] then --if not on the conveyor then the interactability of the pickup is turned on(true) and u are able to pick it up again
 				inConveyor[pickup] = nil 
 				if pickup and pickup.Parent then
 					if not pickup:GetAttribute("Locked") and not pickup:GetAttribute("Held") then
