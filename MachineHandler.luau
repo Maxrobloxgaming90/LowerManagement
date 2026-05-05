@@ -2,12 +2,15 @@
 --If scanned a special pickup, then it will error and if u scanned 5 pickups it will have a 10 seconds timer 
 --until it fully shutdowns on where uppermanagement gives you 1000 performance points for being a proactive tester of the CBT3000
 
+
+--Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage") 
 local RunService = game:GetService("RunService") 
 local CollectionService = game:GetService("CollectionService") 
 local Debris = game:GetService("Debris") 
 local TweenService = game:GetService("TweenService") 
 
+--Modules
 local ItemUtils = require(ReplicatedStorage.Utils.ItemUtils)
 local SoundUtils = require(ReplicatedStorage.Utils.SoundUtils)
 local StringUtils = require(ReplicatedStorage.Utils.StringUtils)
@@ -17,16 +20,30 @@ local ScreenMessage = require(ReplicatedStorage.ScreenMessage)
 local RoundUtils = require(ReplicatedStorage.Utils.Round.RoundUtils)
 local PhysicsUtils = require(ReplicatedStorage.Utils.TestPhysicsUtil)
 
+--Remotes
 local activateEvent = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ActivateMachine")
 local toggleEvent = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ToggleConveyor")
 local scanEvent = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ScanItem")
 local requestEvent = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("RequestScannerAccess")
+
+--Bindable
 local toggleRidge = ReplicatedStorage:WaitForChild("BindableEvent"):WaitForChild("ToggleRidge")
 local machineVisuals = ReplicatedStorage:WaitForChild("BindableEvent"):WaitForChild("MachineVisuals")
 
+--MachineRefs
 local CBT = script.Parent
 local CBT3001 = CBT["CBT 3001 Promotion Pack"]["CBT 3001"]
+local scanner = CBT.Scanner
+local destroyPart = CBT.DestroyPart
+local destroyZone = CBT.DestroyZone
+local conveyor = CBT.Conveyor
+local conveyorZone = CBT.ConveyorZone
+local playerGate = {
+	CBT.Gate.PlayerGate,
+	CBT.Gate.PlayerGate2
+}
 
+--Sounds
 local ConveyorSound = CBT3001:WaitForChild("ConveyorSound"):WaitForChild("ConveyorRunSound")
 local ConveyorEnd = CBT3001:WaitForChild("ConveyorSound"):WaitForChild("End")
 --local ConveyorLoop = CBT:WaitForChild("CBT 3001 Promotion Pack"):WaitForChild("CBT 3001"):WaitForChild("ConveyorSound"):WaitForChild("Loop")
@@ -42,15 +59,7 @@ local neonParts = CBT3001.NeonParts
 local orbs = CBT3001.Orbs
 local terminal = script.Parent.Parent.Terminal
 
-local conveyor = CBT.Conveyor
-local conveyorZone = CBT.ConveyorZone
-local scanner = CBT.Scanner
-local destroyPart = CBT.DestroyPart
-local destroyZone = CBT.DestroyZone
-local playerGate = {
-	CBT.Gate.PlayerGate,
-	CBT.Gate.PlayerGate2
-}
+
 
 local speed = 3
 local highlightDuration = 15
@@ -62,6 +71,7 @@ local lastItemTime = 0
 
 local scoreBonus = 1000
 
+--States
 local overloaded = false
 local broken = false
 local active = false
@@ -249,6 +259,7 @@ machineVisuals.Event:Connect(function()
 	end
 end)
 
+-- ActivateMachine
 activateEvent.OnServerEvent:Connect(function()
 	if broken then return end
 	if not active then
@@ -266,6 +277,7 @@ toggleEvent.OnServerEvent:Connect(function()
 	updateConveyor()
 end)
 
+--Highlights similar items
 local function highlightSimilar(targetPickup)
 	local count = 0
 
@@ -293,6 +305,7 @@ end
 
 local machineConn
 
+-- shutdowns the machine
 function shutdownMachine()
 	if broken then return end
 	broken = true
@@ -359,12 +372,13 @@ function shutdownMachine()
 	})
 	
 	task.wait(3)
-	
+	--announces for being a proactive tester
 	ScreenMessage.ShowMessage(`We finally know the limits of the machine.\nAwarding your team <font color="rgb(108, 255, 98)">{scoreBonus}</font> performance score for being a proactive tester.\nNow to call up Arron...`, 5, false, nil, {
 		Section = "UpperManagement"
 	})
 end
 
+-- triggers the overload AKA 10 second timer before shutdown
 function triggerOverload()
 	if overloaded or broken then return end
 
@@ -408,6 +422,7 @@ function triggerOverload()
 	end)
 end
 
+-- obj collision so that the player doesnt enter the machine
 local function setupCharacter(char)
 	PhysicsUtils.SetObjCollisionGroup(char, "Players", true)
 end
@@ -419,6 +434,7 @@ end)
 local touchingPickups = {}
 local killedCharacters = {}
 
+-- destroys any parts that touches the zone and kills the player, plays a sound aswell
 destroyZone.Touched:Connect(function(part)
 	local pickup = ItemUtils.getPickupFromPart(part)
 
@@ -472,6 +488,7 @@ for _, player in ipairs(game.Players:GetPlayers()) do
 	end
 end
 
+-- activates the machine and most stuff is done here(scan, chute, collision, error, etc)
 function activateMachine() 
 	if broken then return end 
 
