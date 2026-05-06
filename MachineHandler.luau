@@ -21,14 +21,14 @@ local RoundUtils = require(ReplicatedStorage.Utils.Round.RoundUtils)
 local PhysicsUtils = require(ReplicatedStorage.Utils.TestPhysicsUtil)
 
 --Remotes
-local activateEvent = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ActivateMachine")
-local toggleEvent = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ToggleConveyor")
-local scanEvent = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ScanItem")
-local requestEvent = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("RequestScannerAccess")
+local activateEvent = ReplicatedStorage.Remotes.ActivateMachine
+local toggleEvent = ReplicatedStorage.Remotes.ToggleConveyor
+local scanEvent = ReplicatedStorage.Remotes.ScanItem
+local requestEvent = ReplicatedStorage.Remotes.RequestScannerAccess
 
 --Bindable
-local toggleRidge = ReplicatedStorage:WaitForChild("BindableEvent"):WaitForChild("ToggleRidge")
-local machineVisuals = ReplicatedStorage:WaitForChild("BindableEvent"):WaitForChild("MachineVisuals")
+local toggleRidge = ReplicatedStorage.BindableEvent.ToggleRidge
+local machineVisuals = ReplicatedStorage.BindableEvent.MachineVisuals
 
 --MachineRefs
 local CBT = script.Parent
@@ -44,12 +44,12 @@ local playerGate = {
 }
 
 --Sounds
-local ConveyorSound = CBT3001:WaitForChild("ConveyorSound"):WaitForChild("ConveyorRunSound")
-local ConveyorEnd = CBT3001:WaitForChild("ConveyorSound"):WaitForChild("End")
+local ConveyorSound = CBT3001.ConveyorSound.ConveyorRunSound
+local ConveyorEnd = CBT3001.ConveyorSound.End
 --local ConveyorLoop = CBT:WaitForChild("CBT 3001 Promotion Pack"):WaitForChild("CBT 3001"):WaitForChild("ConveyorSound"):WaitForChild("Loop")
 
-local disposalChute = CBT:WaitForChild("DisposalChute")
-local coverPart = disposalChute:WaitForChild("Cover")
+local disposalChute = CBT.DisposalChute
+local coverPart = disposalChute.Cover
 
 local closedCF = coverPart.CFrame
 local openCF = closedCF * CFrame.new(0, -5.884, 0)
