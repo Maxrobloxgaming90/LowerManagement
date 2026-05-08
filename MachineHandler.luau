@@ -332,8 +332,6 @@ local function processScan(pickup)
 	
 	pickup:SetAttribute("Scanned", true)
 	scannedItems[pickup] = true
-
-	scannedItems[pickup] = true
 	ItemUtils.TogglePickupInteractability(pickup, false)
 	pickup:SetAttribute("Locked", true)
 
